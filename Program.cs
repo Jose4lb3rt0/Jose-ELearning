@@ -26,7 +26,16 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login"; // Ruta donde se redirige si no está autenticado
+    options.AccessDeniedPath = "/Account/AccessDenied"; // Ruta de acceso denegado (opcional)
+});
+
 var app = builder.Build();
+
+//-----Middleware para redirigir-----
+
 
 // Seeding roles y un usuario administrador
 using (var scope = app.Services.CreateScope())
