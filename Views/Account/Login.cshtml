@@ -1,0 +1,18 @@
+﻿@model LoginViewModel
+<h2>Inicio de Sesión</h2>
+
+<form asp-action="Login" method="post">
+    <div>
+        <label asp-for="Username"></label>
+        <input asp-for="Username" />
+    </div>
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password" type="password" />
+    </div>
+    <div>
+        <input asp-for="RememberMe" type="checkbox" />
+        <label asp-for="RememberMe"></label>
+    </div>
+    <button type="submit">Iniciar Sesión</button>
+</form>
