@@ -17,16 +17,24 @@ namespace E_Platform.Controllers
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<CursoController> _logger;
 
-        public CursoController(AppDbContext context, UserManager<ApplicationUser> userManager)
+        public CursoController(AppDbContext context, UserManager<ApplicationUser> userManager, ILogger<CursoController> logger)
         {
             _context = context;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Cursos.ToListAsync());
+            var cursos = await _context.Cursos
+                .Include(c => c.Objetivos)
+                .Include(c => c.Requisitos)
+                .Include(c => c.Instructor)
+                .ToListAsync();
+
+            return View(cursos);
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -50,20 +58,55 @@ namespace E_Platform.Controllers
         public async Task<IActionResult> Create()
         {
             var instructors = await _userManager.GetUsersInRoleAsync("Instructor");
-            ViewBag.Instructors = new SelectList(instructors, "Id", "UserName"); 
+
+            var instructorSelectList = instructors.Select(i => new { i.Id, i.Name }).ToList();
+
+            ViewBag.Instructors = new SelectList(instructorSelectList, "Id", "Name");
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,Descripcion,InstructorId,Precio,FechaCreacion,Activo")] Curso curso)
+        public async Task<IActionResult> Create([Bind("Id,Nombre,Descripcion,InstructorId,Precio")] Curso curso, List<string> objetivos, List<string> requisitos)
         {
+            _logger.LogInformation($"Iniciando la creación de un nuevo curso: {curso}");
+
             if (ModelState.IsValid)
             {
+                 // Agregar objetivos
+                foreach (var objetivo in objetivos)
+                {
+                    if (!string.IsNullOrWhiteSpace(objetivo))
+                    {
+                        curso.Objetivos.Add(new ObjetivoCurso { Descripcion = objetivo });
+                    }
+                }
+
+                // Agregar requisitos
+                foreach (var requisito in requisitos)
+                {
+                    if (!string.IsNullOrWhiteSpace(requisito))
+                    {
+                        curso.Requisitos.Add(new RequisitoCurso { Descripcion = requisito });
+                    }
+                }
                 _context.Add(curso);
                 await _context.SaveChangesAsync();
+                _logger.LogInformation($"Curso creado con éxito: {curso.Nombre}");
                 return RedirectToAction(nameof(Index));
             }
+
+            _logger.LogWarning($"El modelo del curso no es válido. Detalles de errores:");
+            foreach (var key in ModelState.Keys)
+            {
+                var errors = ModelState[key].Errors;
+                foreach (var error in errors)
+                {
+                    _logger.LogWarning($"Campo: {key}, Error: {error.ErrorMessage}");
+                }
+            }
+
+            ViewBag.Instructors = new SelectList(await _userManager.GetUsersInRoleAsync("Instructor"), "Id", "Name");
             return View(curso);
         }
 
@@ -84,7 +127,7 @@ namespace E_Platform.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Descripcion,InstructorId,Precio,FechaCreacion,Activo")] Curso curso)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Descripcion,InstructorId,Precio,Activo")] Curso curso)
         {
             if (id != curso.Id)
             {

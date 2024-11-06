@@ -1,0 +1,33 @@
+﻿@model IEnumerable<E_Platform.Models.Curso>
+
+<h2>Mis Cursos</h2>
+
+<div class="row">
+    @if (Model.Any())
+    {
+        foreach (var curso in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@curso.Nombre</h5>
+                        <p class="card-text">@curso.Descripcion</p>
+                        <p class="card-text">
+                            <strong>Precio:</strong> @curso.Precio EstudiaCoins
+                        </p>
+                        <p class="card-text">
+                            <strong>Instructor:</strong> @curso.Instructor.Name
+                        </p>
+                        <a asp-controller="Curso" asp-action="Detalle" asp-route-id="@curso.Id" class="btn btn-primary">Ver Curso</a>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="col-12">
+            <p class="text-center text-muted">No estás inscrito en ningún curso.</p>
+        </div>
+    }
+</div>

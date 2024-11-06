@@ -31,19 +31,25 @@
             </div>
             <div class="form-group">
                 <label asp-for="Precio" class="control-label"></label>
-                <input asp-for="Precio" class="form-control" />
+                <input asp-for="Precio" type="number" class="form-control" />
                 <span asp-validation-for="Precio" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label asp-for="FechaCreacion" class="control-label"></label>
-                <input asp-for="FechaCreacion" class="form-control" />
-                <span asp-validation-for="FechaCreacion" class="text-danger"></span>
+                <label>Objetivos</label>
+                <div id="objetivos-container">
+                    <input type="text" name="objetivos" class="form-control mb-2" placeholder="Objetivo 1" />
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addObjective()">Añadir Objetivo</button>
             </div>
-            <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="Activo" /> @Html.DisplayNameFor(model => model.Activo)
-                </label>
+            <div class="form-group">
+                <label>Requisitos</label>
+                <div id="requisitos-container">
+                    <input type="text" name="requisitos" class="form-control mb-2" placeholder="Requisito 1" />
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addRequirement()">Añadir Requisito</button>
             </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -54,7 +60,27 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
+<script>
+    function addObjective() {
+        const container = document.getElementById('objetivos-container');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'objetivos';
+        input.classList.add('form-control', 'mb-2');
+        input.placeholder = `Objetivo ${container.children.length + 1}`;
+        container.appendChild(input);
+    }
 
+    function addRequirement() {
+        const container = document.getElementById('requisitos-container');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'requisitos';
+        input.classList.add('form-control', 'mb-2');
+        input.placeholder = `Requisito ${container.children.length + 1}`;
+        container.appendChild(input);
+    }
+</script>
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

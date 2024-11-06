@@ -1,26 +1,45 @@
 ﻿@model RegisterViewModel
-<h2>Registro</h2>
 
-<form asp-action="Register" method="post">
-    <div>
-        <label asp-for="Name"></label>
-        <input asp-for="Name" />
+<div class="container d-flex justify-content-center align-items-center p-4">
+    <div class="card shadow-lg" style="width: 28rem;">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <img src="~/img/logo.png" alt="Logo" class="img-fluid mx-auto d-block" style="max-height: 80px;">
+            </div>
+            <h2 class="card-title text-center mb-4">Registro</h2>
+            <form asp-action="Register" method="post">
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label"></label>
+                    <input asp-for="Username" class="form-control" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" type="password" class="form-control" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Registrarse</button>
+                </div>
+            </form>
+            <p class="text-center mt-3">
+                ¿Ya tienes cuenta? <a asp-action="Login">Inicia sesión aquí</a>
+            </p>
+        </div>
     </div>
-    <div>
-        <label asp-for="Username"></label>
-        <input asp-for="Username" />
-    </div>
-    <div>
-        <label asp-for="Email"></label>
-        <input asp-for="Email" />
-    </div>
-    <div>
-        <label asp-for="Password"></label>
-        <input asp-for="Password" type="password" />
-    </div>
-    <div>
-        <label asp-for="ConfirmPassword"></label>
-        <input asp-for="ConfirmPassword" type="password" />
-    </div>
-    <button type="submit">Registrarse</button>
-</form>
+</div>

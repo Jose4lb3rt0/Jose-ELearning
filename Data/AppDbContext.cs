@@ -14,6 +14,7 @@ namespace E_Platform.Data
         public DbSet<Modulo> Modulos { get; set; }
         public DbSet<ObjetivoCurso> ObjetivosCurso { get; set; }
         public DbSet<RequisitoCurso> RequisitosCurso { get; set; }
+        public DbSet<Inscripcion> Inscripciones {  get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

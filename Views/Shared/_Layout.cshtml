@@ -7,36 +7,60 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/E_Platform.styles.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-3">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">E_Platform</a>
+                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
+                    @* <img src="~/img/logo.png" alt="Logo" class="d-inline-block align-text-top" style="height: 30px; margin-right: 10px;"> *@
+                    EstudiaPlatform
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarContent">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                        @if (!(ViewContext.RouteData.Values["controller"]?.ToString() == "Account" &&
+                        (ViewContext.RouteData.Values["action"]?.ToString() == "Login" ||
+                        ViewContext.RouteData.Values["action"]?.ToString() == "Register")))
+                        {
+                            @* <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            </li> *@
+                        }
+
                         @if (User.Identity.IsAuthenticated)
                         {
                             if (User.IsInRole("Administrador"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Admin" asp-action="Dashboard">Admin Dashboard</a>
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Users" asp-action="Index">
+                                        <i class="fas fa-users"></i> Usuarios
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Curso" asp-action="Index">
+                                        <i class="fa-solid fa-book"></i> Cursos
+                                    </a>
                                 </li>
                             }
                             else if (User.IsInRole("Alumno"))
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-area="" asp-controller="Student" asp-action="Dashboard">Student Dashboard</a>
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Inscripcion" asp-action="MisCursos">
+                                        <i class="fa-solid fa-book"></i> Mis cursos
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-white" asp-area="" asp-controller="Inscripcion" asp-action="Index">
+                                        <i class="fa-solid fa-graduation-cap"></i> Inscribirme
+                                    </a>
                                 </li>
                             }
                         }
@@ -44,19 +68,26 @@
                     <ul class="navbar-nav">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <li class="nav-item">
-                                <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-link nav-link">Cerrar sesión</button>
-                                </form>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-regular fa-circle-user"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                    <li>
+                                        <form asp-action="Logout" asp-controller="Account" method="post">
+                                            <button type="submit" class="dropdown-item">Cerrar sesión</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
+                                <a class="btn btn-outline-light me-2" asp-controller="Account" asp-action="Login">Iniciar sesión</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" asp-controller="Account" asp-action="Register">Registrarse</a>
+                                <a class="btn btn-light text-primary" asp-controller="Account" asp-action="Register">Registrarse</a>
                             </li>
                         }
                     </ul>
@@ -65,15 +96,33 @@
         </nav>
     </header>
 
-    <div class="container ">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main" class="flex-grow-1 container my-4">
+        @RenderBody()
+    </main>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2024 - E_Platform - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="bg-dark text-light py-4">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5 class="text-uppercase">E_Platform</h5>
+                    <p>Plataforma educativa para conectar estudiantes y profesores.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <h5 class="text-uppercase">Enlaces</h5>
+                    <ul class="list-unstyled">
+                        <li><a class="text-light text-decoration-none" asp-area="" asp-controller="Home" asp-action="Privacy">Política de Privacidad</a></li>
+                        <li><a class="text-light text-decoration-none" href="#">Términos de Servicio</a></li>
+                        <li><a class="text-light text-decoration-none" href="#">Soporte</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5 class="text-uppercase">Contáctanos</h5>
+                    <p>Email: <a href="mailto:support@eplatform.com" class="text-light text-decoration-none">support@eplatform.com</a></p>
+                    <p>Teléfono: +1 234 567 890</p>
+                </div>
+            </div>
+            <hr class="bg-light" />
+            <p class="mb-0">&copy; 2024 - E_Platform. Todos los derechos reservados.</p>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

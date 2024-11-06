@@ -1,0 +1,40 @@
+﻿@model IEnumerable<E_Platform.Models.Curso>
+
+<h2>Inscribirse a Cursos</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Precio (EstudiaCoins)</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var curso in Model)
+        {
+            <tr>
+                <td>@curso.Nombre</td>
+                <td>@curso.Descripcion</td>
+                <td>@curso.Precio</td>
+                <td>
+                    <form asp-action="Inscribir" method="post">
+                        <input type="hidden" name="cursoId" value="@curso.Id" />
+                        <button type="submit" class="btn btn-primary">Inscribirme</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
