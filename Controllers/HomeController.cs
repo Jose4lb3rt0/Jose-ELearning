@@ -17,6 +17,15 @@ namespace E_Platform.Controllers
 
         public IActionResult Index()
         {
+            if (User.IsInRole("Administrador"))
+            {
+                return RedirectToAction("AdminDashboard");
+            }
+            else if (User.IsInRole("Alumno"))
+            {
+                return RedirectToAction("StudentDashboard");
+            }
+
             return View();
         }
 
@@ -30,5 +39,18 @@ namespace E_Platform.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [Authorize(Roles = "Administrador")]
+        public IActionResult AdminDashboard()
+        {
+            return View();
+        }
+
+        [Authorize(Roles = "Alumno")]
+        public IActionResult StudentDashboard()
+        {
+            return View();
+        }
+
     }
 }

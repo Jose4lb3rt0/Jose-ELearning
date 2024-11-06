@@ -21,6 +21,11 @@ namespace E_Platform.Seeders
                 await roleManager.CreateAsync(new IdentityRole("Alumno"));
             }
 
+            if (!await roleManager.RoleExistsAsync("Instructor"))
+            {
+                await roleManager.CreateAsync(new IdentityRole("Instructor"));
+            }
+
             // Crear usuario administrador
             var adminUser = new ApplicationUser { UserName = "admin", Email = "admin@admin.com", EmailConfirmed = true };
             var adminPassword = "admin";

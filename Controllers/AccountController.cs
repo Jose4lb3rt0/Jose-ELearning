@@ -43,6 +43,9 @@ namespace E_Platform.Controllers
 
                 if (result.Succeeded)
                 {
+                    // Asignar rol "Alumno" por defecto
+                    await _userManager.AddToRoleAsync(user, "Alumno");
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Home");
                 }
@@ -75,6 +78,21 @@ namespace E_Platform.Controllers
 
                 if (result.Succeeded)
                 {
+                    var user = await _userManager.FindByNameAsync(model.Username);
+
+                    var roles = await _userManager.GetRolesAsync(user);
+                    _logger.LogInformation($"User {model.Username} has roles: {string.Join(", ", roles)}");
+
+                    if (await _userManager.IsInRoleAsync(user, "Administrador"))
+                    {
+                        return RedirectToAction("AdminDashboard", "Home");
+                    }
+                    else if (await _userManager.IsInRoleAsync(user, "Alumno"))
+                    {
+                        return RedirectToAction("StudentDashboard", "Home");
+                    }
+
+                    // Fallback
                     return RedirectToAction("Index", "Home");
                 }
 
@@ -89,7 +107,7 @@ namespace E_Platform.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Login", "Account");
         }
     }
 }

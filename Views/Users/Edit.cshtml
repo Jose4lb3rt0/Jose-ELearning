@@ -1,0 +1,30 @@
+﻿@model E_Platform.Models.ApplicationUser
+
+<h2>Editar Usuario</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="UserName" class="form-label"></label>
+        <input asp-for="UserName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label for="Role" class="form-label">Rol</label>
+        <select name="role" class="form-control" asp-items="ViewBag.Roles">
+            <option value="">Seleccionar Rol</option>
+        </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="EstudiaCoins" class="form-label"></label>
+        <input asp-for="EstudiaCoins" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+</form>
