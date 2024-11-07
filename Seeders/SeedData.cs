@@ -10,7 +10,6 @@ namespace E_Platform.Seeders
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            // Crear roles
             if (!await roleManager.RoleExistsAsync("Administrador"))
             {
                 await roleManager.CreateAsync(new IdentityRole("Administrador"));
@@ -26,8 +25,7 @@ namespace E_Platform.Seeders
                 await roleManager.CreateAsync(new IdentityRole("Instructor"));
             }
 
-            // Crear usuario administrador
-            var adminUser = new ApplicationUser { UserName = "admin", Email = "admin@admin.com", EmailConfirmed = true };
+            var adminUser = new ApplicationUser { Name = "Admin", UserName = "admin", Email = "admin@admin.com", EmailConfirmed = true };
             var adminPassword = "admin";
 
             var user = await userManager.FindByNameAsync(adminUser.UserName);

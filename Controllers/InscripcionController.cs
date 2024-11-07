@@ -88,8 +88,8 @@ namespace E_Platform.Controllers
             var cursosInscritos = await _context.Inscripciones
                 .Where(i => i.StudentId == userId)
                 .Include(i => i.Curso) // Incluye el curso primero
-                .ThenInclude(c => c.Instructor) // Incluye el instructor si es necesario
-                .Select(i => i.Curso) // Luego selecciona los cursos
+                .ThenInclude(c => c.Instructor) //  instructor
+                .Select(i => i.Curso) //  cursos
                 .ToListAsync();
 
 

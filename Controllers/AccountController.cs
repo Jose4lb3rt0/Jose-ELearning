@@ -22,7 +22,7 @@ namespace E_Platform.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Home"); // Redirige si el usuario ya está autenticado
+                return RedirectToAction("Index", "Home"); 
             }
             return View();
         }
