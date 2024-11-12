@@ -54,7 +54,6 @@ namespace E_Platform.Controllers
                     UserName = model.UserName,
                     Email = model.Email,
                     Name = model.Name,
-                    EstudiaCoins = model.EstudiaCoins 
                 };
 
                 var result = await _userManager.CreateAsync(user, password);
@@ -108,7 +107,6 @@ namespace E_Platform.Controllers
                 user.Name = model.Name;
                 user.Email = model.Email;
                 user.UserName = model.UserName;
-                user.EstudiaCoins = model.EstudiaCoins;
 
                 var result = await _userManager.UpdateAsync(user);
                 if (result.Succeeded)

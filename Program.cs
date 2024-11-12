@@ -1,26 +1,27 @@
 using E_Platform.Data;
 using E_Platform.Models;
 using E_Platform.Seeders;
+using E_Platform.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Agregando los servicios al contenedor.
 builder.Services.AddControllersWithViews();
 
-// Agrega DbContext con conexión a SQL Server
+// Agregando DbContext con conexión a SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Conexion")));
 
-// Configurar Identity
+// Configurando Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 4; // Permite contraseñas cortas
+    options.Password.RequiredLength = 4;
     options.Password.RequiredUniqueChars = 1;
 })
 .AddEntityFrameworkStores<AppDbContext>()
@@ -30,24 +31,26 @@ builder.Services.AddScoped<PaymentService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login"; // Ruta donde se redirige si no está autenticado
-    options.AccessDeniedPath = "/Account/AccessDenied"; // Ruta de acceso denegado (opcional)
+    options.LoginPath = "/Account/Login"; 
+    options.AccessDeniedPath = "/Account/AccessDenied"; 
 });
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
+builder.Services.AddScoped<PermissionService>();
 
 var app = builder.Build();
 
-//-----Middleware para redirigir-----
-
-
-// Seeding roles y un usuario administrador
+// Seeding
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var context = services.GetRequiredService<AppDbContext>();
+
     await SeedData.Initialize(services);
+    await PermissionSeeder.SeedPermissions(roleManager, context);
 }
 
 // Configure the HTTP request pipeline.

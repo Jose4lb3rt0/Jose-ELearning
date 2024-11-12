@@ -10,21 +10,12 @@ namespace E_Platform.Seeders
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            if (!await roleManager.RoleExistsAsync("Administrador"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Administrador"));
-            }
+            //roles
+            await CreateRoleIfNotExists(roleManager, "Administrador");
+            await CreateRoleIfNotExists(roleManager, "Alumno");
+            await CreateRoleIfNotExists(roleManager, "Instructor");
 
-            if (!await roleManager.RoleExistsAsync("Alumno"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Alumno"));
-            }
-
-            if (!await roleManager.RoleExistsAsync("Instructor"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Instructor"));
-            }
-
+            //administrador
             var adminUser = new ApplicationUser { Name = "Admin", UserName = "admin", Email = "admin@admin.com", EmailConfirmed = true };
             var adminPassword = "admin";
 
@@ -36,6 +27,14 @@ namespace E_Platform.Seeders
                 {
                     await userManager.AddToRoleAsync(adminUser, "Administrador");
                 }
+            }
+        }
+
+        private static async Task CreateRoleIfNotExists(RoleManager<IdentityRole> roleManager, string roleName)
+        {
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
             }
         }
     }

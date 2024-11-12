@@ -12,10 +12,13 @@ namespace E_Platform.Models
         [Required]
         public string Titulo { get; set; }
 
+        [StringLength(500)]
+        public string Descripcion { get; set; }
+
         [ForeignKey("Curso")]
         public int CursoId { get; set; }
-
         public Curso Curso { get; set; }
+
         public ICollection<Leccion> Lecciones { get; set; }
     }
 }

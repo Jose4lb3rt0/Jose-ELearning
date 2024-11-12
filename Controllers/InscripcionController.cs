@@ -23,12 +23,9 @@ namespace E_Platform.Controllers
             _paymentService = paymentService;
         }
 
-        // Muestra cursos disponibles
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
-
-            //NO está inscrito
 
             var cursosDisponibles = await _context.Cursos
                 .Where(c => !_context.Inscripciones.Any(i => i.CursoId == c.Id && i.StudentId == userId))
@@ -50,7 +47,6 @@ namespace E_Platform.Controllers
                 return RedirectToAction("Index");
             }
 
-            // Verifica si ya está inscrito
             var yaInscrito = await _context.Inscripciones
                 .AnyAsync(i => i.CursoId == cursoId && i.StudentId == userId);
             if (yaInscrito)
@@ -80,16 +76,16 @@ namespace E_Platform.Controllers
             return RedirectToAction("Index");
         }
 
-        // Muestra cursos inscritos
+        //Este lo he movido al controlador de CursosController
         public async Task<IActionResult> MisCursos()
         {
             var userId = _userManager.GetUserId(User);
 
             var cursosInscritos = await _context.Inscripciones
                 .Where(i => i.StudentId == userId)
-                .Include(i => i.Curso) // Incluye el curso primero
-                .ThenInclude(c => c.Instructor) //  instructor
-                .Select(i => i.Curso) //  cursos
+                .Include(i => i.Curso) 
+                .ThenInclude(c => c.Instructor) 
+                .Select(i => i.Curso) 
                 .ToListAsync();
 
 

@@ -43,7 +43,6 @@ namespace E_Platform.Controllers
 
                 if (result.Succeeded)
                 {
-                    // Asignar rol "Alumno" por defecto
                     await _userManager.AddToRoleAsync(user, "Alumno");
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
@@ -64,7 +63,7 @@ namespace E_Platform.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction("Index", "Home"); // Redirige si el usuario ya está autenticado
+                return RedirectToAction("Index", "Home"); 
             }
             return View();
         }

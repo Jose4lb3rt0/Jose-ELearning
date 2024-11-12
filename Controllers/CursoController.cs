@@ -9,34 +9,79 @@ using E_Platform.Data;
 using E_Platform.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using E_Platform.Services;
 
 namespace E_Platform.Controllers
 {
-    [Authorize(Roles = "Administrador")]
+    //[Authorize(Roles = "Administrador")]
     public class CursoController : Controller
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<CursoController> _logger;
+        private readonly PermissionService _permissionService;
 
-        public CursoController(AppDbContext context, UserManager<ApplicationUser> userManager, ILogger<CursoController> logger)
+        public CursoController(
+            AppDbContext context, 
+            UserManager<ApplicationUser> userManager, 
+            ILogger<CursoController> logger, 
+            PermissionService permissionService
+        )
         {
             _context = context;
             _userManager = userManager;
             _logger = logger;
+            _permissionService = permissionService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var cursos = await _context.Cursos
-                .Include(c => c.Objetivos)
-                .Include(c => c.Requisitos)
-                .Include(c => c.Instructor)
-                .ToListAsync();
+            var user = await _userManager.GetUserAsync(User);
+            var userId = _userManager.GetUserId(User);
 
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!await _permissionService.HasPermissionAsync(user, "VerCursos"))
+            {
+                return Forbid();
+            }
+
+            var permisos = await _permissionService.GetPermissionAsync(user);
+
+            List<Curso> cursos = new List<Curso>();
+
+            if (User.Identity.IsAuthenticated)
+            {
+                if (permisos.Contains("VerCursos"))
+                { 
+                    if (User.IsInRole("Administrador"))
+                    {
+                        cursos = await _context.Cursos
+                            .Include(c => c.Objetivos)
+                            .Include(c => c.Requisitos)
+                            .Include(c => c.Instructor)
+                            .ToListAsync();
+                    }
+                    else if (User.IsInRole("Alumno"))
+                    {
+                        cursos = await _context.Inscripciones
+                            .Where(i => i.StudentId == userId)
+                            .Include(i => i.Curso)
+                            .ThenInclude(c => c.Instructor)
+                            .Select(i => i.Curso)
+                            .ToListAsync();
+                    }
+                }
+            }
+
+            ViewBag.Permisos = permisos;
             return View(cursos);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -45,10 +90,26 @@ namespace E_Platform.Controllers
             }
 
             var curso = await _context.Cursos
-                .FirstOrDefaultAsync(m => m.Id == id);
+               .Include(c => c.Modulos) 
+               .Include(c => c.Instructor) 
+               .FirstOrDefaultAsync(c => c.Id == id);
+
             if (curso == null)
             {
                 return NotFound();
+            }
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new
+                {
+                    curso.Nombre,
+                    curso.Descripcion,
+                    Instructor = curso.Instructor?.Name,
+                    Modulos = curso.Modulos != null
+                        ? curso.Modulos.Select(m => new { m.Titulo, m.Descripcion })
+                        : Enumerable.Empty<object>()
+                });
             }
 
             return View(curso);
@@ -57,46 +118,81 @@ namespace E_Platform.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!await _permissionService.HasPermissionAsync(user, "CrearCurso"))
+            { 
+                return Forbid();
+            }
+
             var instructors = await _userManager.GetUsersInRoleAsync("Instructor");
+            var instructorsSelectList = instructors.Select(i => new { i.Id, i.Name }).ToList();
 
-            var instructorSelectList = instructors.Select(i => new { i.Id, i.Name }).ToList();
-
-            ViewBag.Instructors = new SelectList(instructorSelectList, "Id", "Name");
+            ViewBag.Instructors = new SelectList(instructorsSelectList, "Id", "Name");
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,Descripcion,InstructorId,Precio")] Curso curso, List<string> objetivos, List<string> requisitos)
+        public async Task<IActionResult> Create(
+            [Bind("Id,Nombre,Descripcion,InstructorId,Precio")] Curso curso,
+            List<string> objetivos,
+            List<string> requisitos,
+            List<ModuloViewModel> modulos
+        )
         {
-            _logger.LogInformation($"Iniciando la creación de un nuevo curso: {curso}");
+            _logger.LogInformation("Datos del formulario:");
+            foreach (var key in Request.Form.Keys)
+            {
+                _logger.LogInformation($"{key}: {Request.Form[key]}");
+            }
+
+            _logger.LogInformation($"Iniciando la creación de un nuevo curso: Nombre={curso.Nombre}, Descripción={curso.Descripcion}, InstructorId={curso.InstructorId}, Precio={curso.Precio}");
 
             if (ModelState.IsValid)
             {
-                 // Agregar objetivos
-                foreach (var objetivo in objetivos)
+                foreach (var objetivo in objetivos ?? Enumerable.Empty<string>())
                 {
                     if (!string.IsNullOrWhiteSpace(objetivo))
                     {
                         curso.Objetivos.Add(new ObjetivoCurso { Descripcion = objetivo });
+                        _logger.LogInformation($"Objetivo añadido: {objetivo}");
                     }
                 }
 
-                // Agregar requisitos
-                foreach (var requisito in requisitos)
+                foreach (var requisito in requisitos ?? Enumerable.Empty<string>())
                 {
                     if (!string.IsNullOrWhiteSpace(requisito))
                     {
                         curso.Requisitos.Add(new RequisitoCurso { Descripcion = requisito });
+                        _logger.LogInformation($"Requisito añadido: {requisito}");
                     }
                 }
+
+                foreach (var modulo in modulos ?? Enumerable.Empty<ModuloViewModel>())
+                {
+                    if (!string.IsNullOrWhiteSpace(modulo.Titulo) && !string.IsNullOrWhiteSpace(modulo.Descripcion))
+                    {
+                        curso.Modulos.Add(new Modulo { Titulo = modulo.Titulo, Descripcion = modulo.Descripcion });
+                        _logger.LogInformation($"Módulo añadido: Título={modulo.Titulo}, Descripción={modulo.Descripcion}");
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Módulo ignorado: Título={modulo.Titulo}, Descripción={modulo.Descripcion}");
+                    }
+                }
+
                 _context.Add(curso);
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Curso creado con éxito: {curso.Nombre}");
                 return RedirectToAction(nameof(Index));
             }
 
-            _logger.LogWarning($"El modelo del curso no es válido. Detalles de errores:");
+            _logger.LogWarning("El modelo del curso no es válido.");
             foreach (var key in ModelState.Keys)
             {
                 var errors = ModelState[key].Errors;
@@ -110,8 +206,20 @@ namespace E_Platform.Controllers
             return View(curso);
         }
 
+
         public async Task<IActionResult> Edit(int? id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!await _permissionService.HasPermissionAsync(user, "EditarCurso"))
+            {
+                return Forbid();
+            }
+
             if (id == null)
             {
                 return NotFound();
@@ -159,6 +267,17 @@ namespace E_Platform.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            if (!await _permissionService.HasPermissionAsync(user, "EliminarCurso"))
+            {
+                return Forbid();
+            }
+
             if (id == null)
             {
                 return NotFound();

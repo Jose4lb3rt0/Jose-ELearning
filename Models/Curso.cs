@@ -31,7 +31,7 @@ namespace E_Platform.Models
 
         public bool Activo { get; set; } = true;
 
-        public ICollection<Modulo>? Modulos { get; set; }
+        public ICollection<Modulo>? Modulos { get; set; } = new List<Modulo>();
         public ICollection<ObjetivoCurso>? Objetivos { get; set; } = new List<ObjetivoCurso>();
         public ICollection<RequisitoCurso>? Requisitos { get; set; } = new List<RequisitoCurso>();
     }

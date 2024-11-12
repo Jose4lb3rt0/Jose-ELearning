@@ -51,6 +51,21 @@
             </div>
 
             <div class="form-group">
+                <label>Módulos</label>
+                <div id="modulos-container">
+                    <div class="row mb-2">
+                        <div class="col-md-6">
+                            <input type="text" name="modulos[0].Titulo" class="form-control mb-2" placeholder="Título" />
+                        </div>
+                        <div class="col-md-6">
+                            <input type="text" name="modulos[0].Descripcion" class="form-control mb-2" placeholder="Descripción" />
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addModule()">Añadir Módulo</button>
+            </div>
+
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -79,6 +94,22 @@
         input.classList.add('form-control', 'mb-2');
         input.placeholder = `Requisito ${container.children.length + 1}`;
         container.appendChild(input);
+    }
+
+    function addModule() {
+        const container = document.getElementById('modulos-container');
+        const index = container.children.length;
+        const row = document.createElement('div');
+        row.className = 'row mb-2';
+        row.innerHTML = `
+            <div class="col-md-6">
+                <input type="text" name="modulos[${index}].Titulo" class="form-control mb-2" placeholder="Título" />
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="modulos[${index}].Descripcion" class="form-control mb-2" placeholder="Descripción" />
+            </div>
+        `;
+        container.appendChild(row);
     }
 </script>
 @section Scripts {

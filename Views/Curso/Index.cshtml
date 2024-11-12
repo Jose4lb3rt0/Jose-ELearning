@@ -1,65 +1,173 @@
 ﻿@model IEnumerable<E_Platform.Models.Curso>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Cursos";
 }
 
-<h1>Index</h1>
+<style>
+    .hover-scale {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Descripcion)
-            </th>
-            <th>
-                Instructor
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Precio)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.FechaCreacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Activo)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Nombre)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Descripcion)
-            </td>
-            <td>
-                @item.Instructor?.Name
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Precio)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.FechaCreacion)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Activo)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    .hover-scale:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .text-decoration-none {
+        text-decoration: none;
+    }
+</style>
+
+<h1 class="text-center mt-4">@ViewData["Title"]</h1>
+
+@if (User.Identity.IsAuthenticated && User.IsInRole("Administrador"))
+{
+        <p>
+            <a asp-action="Create" class="btn btn-success mb-4">Crear Nuevo Curso</a>
+        </p>
 }
-    </tbody>
-</table>
+
+<div class="container">
+    <div class="row">
+        @foreach (var curso in Model)
+        {
+                <div class="col-md-4 mb-4">
+                    <a onclick="loadCursoDetails(@curso.Id)" class="text-decoration-none">
+                        <div class="card h-100 shadow-sm hover-scale">
+                            <img src="https://picsum.photos/300?random=@curso.Id" class="card-img-top" alt="Imagen" style="height: 150px; object-fit: cover;" />
+                            <div class="card-body">
+                                <h5 class="card-title">@curso.Nombre</h5>
+                                <p class="text-success mb-1">
+                                @(curso.Activo ? "Activo" : "Inactivo")
+                                </p>
+                                <hr />
+                                <p class="text-muted mb-3">
+                                @curso.Instructor?.Name
+                                </p>
+
+                                <div class="d-flex justify-content-between">
+                                    <p class="text-success small">
+                                        <strong>Precio:</strong> @curso.Precio.ToString("") EstudiaCoins
+                                    </p>
+                                    <p class="text-muted small">
+                                        <strong>Creado el:</strong> @curso.FechaCreacion.ToShortDateString()
+                                    </p>
+                                </div>
+
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                        <div class="d-grid gap-2">
+                                    @if (!User.IsInRole("Alumno") && ViewBag.Permisos.Contains("VerCurso"))
+                                    {
+                                                    <a class="btn btn-primary btn-block" onclick="loadCursoDetails(@curso.Id)">Detalles</a>
+                                    }
+                                    @if (ViewBag.Permisos.Contains("EditarCurso"))
+                                    {
+                                                    <a asp-action="Edit" asp-route-id="@curso.Id" class="btn btn-warning btn-block">Editar</a>
+                                    }
+                                    @if (ViewBag.Permisos.Contains("EliminarCurso"))
+                                    {
+                                                    <a asp-action="Delete" asp-route-id="@curso.Id" class="btn btn-danger btn-block">Eliminar</a>
+                                    }
+                                    @if (User.IsInRole("Alumno") && ViewBag.Permisos.Contains("VerCurso"))
+                                    {
+                                                    <a class="btn btn-dark btn-block" onclick="loadCursoDetails(@curso.Id)">Ver</a>
+                                    }
+                                        </div>
+                            }
+                            </div>
+                        </div>
+                    </a>
+                </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="cursoDetailsModal" tabindex="-1" aria-labelledby="cursoDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cursoDetailsModalLabel">Detalles del Curso</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="cursoDetailsContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadCursoDetails(cursoId) {
+        $.ajax({
+            url: `/Curso/Details/${cursoId}`,
+            type: "GET",
+            success: function (data) {
+                console.log("Datos recibidos del servidor:", data);
+                const { nombre, descripcion, modulos, instructor } = data;
+
+                let content = `
+                    <h5>${nombre}</h5>
+                    <p>${descripcion}</p>
+                    <p><strong>Instructor:</strong> ${instructor || "No asignado"}</p>
+                    <h6>Módulos</h6>
+                    <div class="accordion" id="modulosAccordion">
+                `;
+
+                if (modulos && modulos.length > 0) {
+                    modulos.forEach((modulo, index) => {
+                        content += `
+                            <div class="d-flex align-items-start mb-3">
+                                <!-- Accordion Item -->
+                                <div class="flex-grow-1">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading${index}">
+                                            <button 
+                                                class="accordion-button collapsed d-flex justify-content-between align-items-center bg-light border-0 shadow-sm" 
+                                                type="button" 
+                                                data-bs-toggle="collapse" 
+                                                data-bs-target="#collapse${index}" 
+                                                aria-expanded="false" 
+                                                aria-controls="collapse${index}">
+                                                <span class="fw-bold">${modulo.titulo}</span>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#modulosAccordion">
+                                            <div class="accordion-body bg-white shadow-sm rounded">
+                                                <p class="mb-0">${modulo.descripcion || "No hay descripción disponible."}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="ms-3 d-flex flex-column align-items-center justify-content-center">
+                                    <button class="btn btn-outline-danger btn-sm mb-2" title="Eliminar">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm mb-2" title="Editar">
+                                        <i class="fa fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success btn-sm" title="Información">
+                                        <i class="fa fa-info-circle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    content += `<p>No hay módulos disponibles.</p>`;
+                }
+
+                content += `</div>`;
+
+                $('#cursoDetailsContent').html(content);
+                $('#cursoDetailsModal').modal('show');
+            },
+            error: function () {
+                alert("No se pudieron cargar los detalles del curso.");
+            }
+        });
+    }
+</script>
