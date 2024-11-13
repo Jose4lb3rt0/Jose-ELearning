@@ -19,6 +19,8 @@ namespace E_Platform.Data
         public DbSet<Inscripcion> Inscripciones {  get; set; }
         public DbSet<AppPermission> AppPermissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<Leccion> Lecciones { get; set; }
+        public DbSet<Cuestionario> Cuestionarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -59,6 +61,17 @@ namespace E_Platform.Data
                 .WithMany()
                 .HasForeignKey(rp => rp.PermissionId);
 
+            builder.Entity<Leccion>()
+                .HasOne(l => l.Modulo)
+                .WithMany(m => m.Lecciones)
+                .HasForeignKey(l => l.ModuloID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Cuestionario>()
+                .HasOne(c => c.Leccion)
+                .WithMany(l => l.Cuestionarios)
+                .HasForeignKey(c => c.LeccionID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

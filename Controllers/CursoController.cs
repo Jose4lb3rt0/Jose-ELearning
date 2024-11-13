@@ -82,38 +82,40 @@ namespace E_Platform.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var curso = await _context.Cursos
-               .Include(c => c.Modulos) 
-               .Include(c => c.Instructor) 
-               .FirstOrDefaultAsync(c => c.Id == id);
+                .Include(c => c.Modulos)
+                .ThenInclude(m => m.Lecciones)
+                .Include(c => c.Instructor)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
+            // Verificar si curso es null
             if (curso == null)
             {
-                return NotFound();
+                return NotFound(new { message = "Curso no encontrado" }); // Respuesta con mensaje opcional
             }
 
-            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return Json(new
             {
-                return Json(new
+                curso.Nombre,
+                curso.Descripcion,
+                Instructor = curso.Instructor?.Name,
+                Modulos = curso.Modulos.Select(m => new
                 {
-                    curso.Nombre,
-                    curso.Descripcion,
-                    Instructor = curso.Instructor?.Name,
-                    Modulos = curso.Modulos != null
-                        ? curso.Modulos.Select(m => new { m.Titulo, m.Descripcion })
-                        : Enumerable.Empty<object>()
-                });
-            }
-
-            return View(curso);
+                    m.Id,
+                    m.Titulo,
+                    m.Descripcion,
+                    Lecciones = m.Lecciones.Select(l => new
+                    {
+                        l.LeccionID,
+                        l.Nombre,
+                        l.Contenido
+                    })
+                })
+            });
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Create()
