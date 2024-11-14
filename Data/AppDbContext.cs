@@ -24,6 +24,8 @@ namespace E_Platform.Data
         public DbSet<Pregunta> Preguntas { get; set; }
         public DbSet<OpcionPregunta> OpcionesPreguntas { get; set; }
         public DbSet<RespuestaEstudiante> RespuestasDeEstudiantes { get; set; }
+        public DbSet<Calificacion> Calificaciones { get; set; }
+        public DbSet<Progreso> Progresos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -98,7 +100,46 @@ namespace E_Platform.Data
                 .HasOne(r => r.AplicacionUsuario)
                 .WithMany()
                 .HasForeignKey(r => r.UsuarioID)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
+
+        
+            builder.Entity<Calificacion>()
+                .HasOne(c => c.Cuestionario)
+                .WithMany(q => q.Calificaciones)
+                .HasForeignKey(c => c.CuestionarioID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Calificacion>()
+                .HasOne(c => c.AplicacionUsuario)
+                .WithMany()
+                .HasForeignKey(c => c.UsuarioID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Progreso
+            builder.Entity<Progreso>()
+                .HasOne(p => p.Curso)
+                .WithMany()
+                .HasForeignKey(p => p.CursoID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Progreso>()
+                .HasOne(p => p.Modulo)
+                .WithMany()
+                .HasForeignKey(p => p.ModuloID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Progreso>()
+                .HasOne(p => p.Leccion)
+                .WithMany()
+                .HasForeignKey(p => p.LeccionID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Progreso>()
+                .HasOne(p => p.AplicacionUsuario)
+                .WithMany()
+                .HasForeignKey(p => p.UsuarioID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

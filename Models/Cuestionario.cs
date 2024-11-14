@@ -20,5 +20,6 @@ namespace E_Platform.Models
         public Leccion? Leccion { get; set; }
         public ICollection<Pregunta>? Preguntas { get; set; }
         public ICollection<RespuestaEstudiante>? RespuestasEstudiantes { get; set; }
+        public ICollection<Calificacion>? Calificaciones { get; set; }
     }
 }
