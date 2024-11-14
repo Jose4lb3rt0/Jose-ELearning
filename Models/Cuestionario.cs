@@ -6,11 +6,9 @@ namespace E_Platform.Models
     public class Cuestionario
     {
         [Key]
-        [Column("cuestionario_id")]
         public int CuestionarioID { get; set; }
 
         [ForeignKey("Leccion")]
-        [Column("leccion_id")]
         public int LeccionID { get; set; }
 
         [Required]
@@ -19,8 +17,8 @@ namespace E_Platform.Models
 
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
-        public Leccion Leccion { get; set; }
-        //public ICollection<Pregunta> Preguntas { get; set; }
-        //public ICollection<RespuestaEstudiante> RespuestasEstudiantes { get; set; }
+        public Leccion? Leccion { get; set; }
+        public ICollection<Pregunta>? Preguntas { get; set; }
+        public ICollection<RespuestaEstudiante>? RespuestasEstudiantes { get; set; }
     }
 }

@@ -20,10 +20,7 @@ namespace E_Platform.Models
 
         public string Contenido { get; set; }
 
-        // Propiedad de navegación opcional
         public virtual Modulo? Modulo { get; set; }
-
-        // Propiedad de navegación opcional
         public virtual ICollection<Cuestionario>? Cuestionarios { get; set; } = new List<Cuestionario>();
     }
 

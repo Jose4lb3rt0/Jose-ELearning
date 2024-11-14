@@ -1,0 +1,90 @@
+﻿@model E_Platform.Models.Cuestionario
+
+@{
+    ViewData["Title"] = "Create Cuestionario";
+}
+
+<h1>Crear Cuestionario</h1>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="LeccionID" class="control-label"></label>
+        <select asp-for="LeccionID" class="form-control" asp-items="ViewBag.LeccionID"></select>
+    </div>
+    <div class="form-group">
+        <label asp-for="Nombre" class="control-label"></label>
+        <input asp-for="Nombre" class="form-control" />
+        <span asp-validation-for="Nombre" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="FechaCreacion" class="control-label"></label>
+        <input asp-for="FechaCreacion" class="form-control" />
+        <span asp-validation-for="FechaCreacion" class="text-danger"></span>
+    </div>
+
+    <h4>Preguntas</h4>
+    <div id="preguntasContainer">
+        <!-- Aquí se agregarán dinámicamente las preguntas y opciones -->
+    </div>
+
+    <button type="button" class="btn btn-secondary" onclick="agregarPregunta()">Agregar Pregunta</button>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Crear Cuestionario" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+        <script>
+            let preguntaIndex = 0;
+
+            function agregarPregunta() {
+                const preguntasContainer = document.getElementById('preguntasContainer');
+                const preguntaDiv = document.createElement('div');
+                preguntaDiv.classList.add('card', 'mb-3');
+                preguntaDiv.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title">Pregunta ${preguntaIndex + 1}</h5>
+                        <input type="hidden" name="Preguntas[${preguntaIndex}].PreguntaID" value="0" />
+                        <div class="form-group">
+                            <label>Texto de la Pregunta</label>
+                            <input type="text" name="Preguntas[${preguntaIndex}].TextoPregunta" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Pregunta</label>
+                            <input type="text" name="Preguntas[${preguntaIndex}].TipoPregunta" class="form-control" />
+                        </div>
+                        <h6>Opciones</h6>
+                        <ul id="opcionesContainer${preguntaIndex}" class="list-group mb-3"></ul>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="agregarOpcion(${preguntaIndex})">Agregar Opción</button>
+                    </div>
+                `;
+                preguntasContainer.appendChild(preguntaDiv);
+                preguntaIndex++;
+            }
+
+            function agregarOpcion(preguntaIdx) {
+                const opcionesContainer = document.getElementById(`opcionesContainer${preguntaIdx}`);
+                const opcionIndex = opcionesContainer.children.length;
+                const opcionLi = document.createElement('li');
+                opcionLi.classList.add('list-group-item');
+                opcionLi.innerHTML = `
+                    <div class="form-group">
+                        <label>Texto de Opción</label>
+                        <input type="text" name="Preguntas[${preguntaIdx}].Opciones[${opcionIndex}].TextoOpcion" class="form-control" />
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" name="Preguntas[0].Opciones[0].EsCorrecta" value="true" class="form-check-input" />
+                        <label class="form-check-label">¿Es correcta?</label>
+                    </div>
+                `;
+                opcionesContainer.appendChild(opcionLi);
+            }
+        </script>
+}

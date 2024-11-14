@@ -1,5 +1,13 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model E_Platform.Models.Leccion
+
+<div class="container mt-4">
+    <h2>Eliminar Lección</h2>
+    <p>¿Estás seguro de que deseas eliminar esta lección?</p>
+    <p><strong>Nombre:</strong> @Model.Nombre</p>
+    <p><strong>Contenido:</strong> @Model.Contenido</p>
+    <form asp-action="DeleteConfirmed">
+        <input type="hidden" asp-for="LeccionID" />
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

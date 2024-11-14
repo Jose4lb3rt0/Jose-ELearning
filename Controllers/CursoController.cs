@@ -86,14 +86,15 @@ namespace E_Platform.Controllers
         {
             var curso = await _context.Cursos
                 .Include(c => c.Modulos)
-                .ThenInclude(m => m.Lecciones)
+                    .ThenInclude(m => m.Lecciones)
+                .Include(c => c.Objetivos)
+                .Include(c => c.Requisitos)
                 .Include(c => c.Instructor)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
-            // Verificar si curso es null
             if (curso == null)
             {
-                return NotFound(new { message = "Curso no encontrado" }); // Respuesta con mensaje opcional
+                return NotFound(new { message = "Curso no encontrado" }); 
             }
 
             return Json(new
@@ -101,6 +102,8 @@ namespace E_Platform.Controllers
                 curso.Nombre,
                 curso.Descripcion,
                 Instructor = curso.Instructor?.Name,
+                Objetivos = curso.Objetivos.Select(o => o.Descripcion),
+                Requisitos = curso.Requisitos.Select(r => r.Descripcion),
                 Modulos = curso.Modulos.Select(m => new
                 {
                     m.Id,

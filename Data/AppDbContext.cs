@@ -21,6 +21,9 @@ namespace E_Platform.Data
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<Leccion> Lecciones { get; set; }
         public DbSet<Cuestionario> Cuestionarios { get; set; }
+        public DbSet<Pregunta> Preguntas { get; set; }
+        public DbSet<OpcionPregunta> OpcionesPreguntas { get; set; }
+        public DbSet<RespuestaEstudiante> RespuestasDeEstudiantes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -72,6 +75,30 @@ namespace E_Platform.Data
                 .WithMany(l => l.Cuestionarios)
                 .HasForeignKey(c => c.LeccionID)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<RespuestaEstudiante>()
+                .HasOne(r => r.Cuestionario)
+                .WithMany(c => c.RespuestasEstudiantes)
+                .HasForeignKey(r => r.CuestionarioID)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            builder.Entity<RespuestaEstudiante>()
+                .HasOne(r => r.Pregunta)
+                .WithMany(p => p.RespuestasEstudiantes)
+                .HasForeignKey(r => r.PreguntaID)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<RespuestaEstudiante>()
+                .HasOne(r => r.OpcionPregunta)
+                .WithMany(o => o.RespuestasEstudiantes)
+                .HasForeignKey(r => r.OpcionID)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<RespuestaEstudiante>()
+                .HasOne(r => r.AplicacionUsuario)
+                .WithMany()
+                .HasForeignKey(r => r.UsuarioID)
+                .OnDelete(DeleteBehavior.Restrict); 
         }
     }
 }

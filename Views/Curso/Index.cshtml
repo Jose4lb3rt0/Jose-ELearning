@@ -131,8 +131,6 @@
     </div>
 </div>
 
-
-
 <script>
     function loadCursoDetails(cursoId) {
         $.ajax({
@@ -140,12 +138,42 @@
             type: "GET",
             success: function (data) {
                 console.log("Datos recibidos del servidor:", data);
-                const { nombre, descripcion, modulos, instructor } = data;
+                const { nombre, descripcion, instructor, objetivos, requisitos, modulos } = data;
 
                 let content = `
                     <h5>${nombre}</h5>
                     <p>${descripcion}</p>
                     <p><strong>Instructor:</strong> ${instructor || "No asignado"}</p>
+
+                    <h6>Objetivos</h5>
+                    <ul class="list-group mt-2">
+                `;
+
+                if(objetivos && objetivos.length > 0){
+                    objetivos.forEach(objetivo => {
+                        content += `<li class="list-group-item">${objetivo}</li>`;
+                    });
+                }else{
+                    content += `<li class="list-group-item">No hay objetivos disponibles</li>`;
+                }
+
+                content += `
+                    </ul>
+                    <h6 class="mt-3">Requisitos</h6>
+                    <ul class="list-group mt-2 mb-3">
+                `;
+
+                if(requisitos && requisitos.length > 0){
+                    requisitos.forEach(requisito => {
+                        content += `<li class="list-group-item">${requisito}</li>`;
+                    });
+                }else{
+                    content += `<li class="list-group-item">No hay requisitos disponibles</li>`;
+                }
+
+                content += `
+                    </ul>
+
                     <h6>Módulos</h6>
                     <div class="accordion" id="modulosAccordion">
                 `;
@@ -157,7 +185,8 @@
                             <div class="d-flex align-items-start mb-3">
                                 <!-- Accordion Item -->
                                 <div class="flex-grow-1">
-                                    <div class="accordion-item">
+
+                                    <div class="accordion-item mb-2 shadow-sm">
                                         <h2 class="accordion-header" id="heading${index}">
                                             <button 
                                                 class="accordion-button collapsed d-flex justify-content-between align-items-center bg-light border-0 shadow-sm" 
@@ -171,7 +200,7 @@
                                         </h2>
                                         <div id="collapse${index}" class="accordion-collapse collapse" aria-labelledby="heading${index}" data-bs-parent="#modulosAccordion">
                                             <div class="accordion-body bg-white shadow-sm rounded">
-                                                <p class="mb-0">${modulo.descripcion || "No hay descripción disponible."}sss</p>
+                                                <p class="mb-0">${modulo.descripcion || "No hay descripción disponible."}</p>
                                                 
                                                 <!-- Lecciones del módulo -->
                                                 <h6 class="mt-3">Lecciones</h6>
@@ -182,14 +211,24 @@
                                                 modulo.lecciones.forEach((leccion) => {
                                                     console.log("Lección recibida:", leccion);
                                                     content += `
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            <span>${leccion.nombre}</span>
-                                                            <div>
-                                                                <a href="/Leccion/Details/${leccion.leccionID}" class="btn btn-sm btn-primary me-2">Ver</a>
-                                                                <a href="/Leccion/Edit/${leccion.leccionID}" class="btn btn-sm btn-warning me-2">Editar</a>
-                                                                <a href="/Leccion/Delete/${leccion.leccionID}" class="btn btn-sm btn-danger">Eliminar</a>
-                                                            </div>
-                                                        </li>
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <span>${leccion.nombre}</span>
+                                                            @if (ViewBag.Permisos.Contains("VerLecciones")){
+                                                                <div>
+                                                                    <a href="/Leccion/Details/${leccion.leccionID}" class="btn btn-dark btn-sm">
+                                                                        <i class="fas fa-eye"></i>
+                                                                    </a>
+                                                                    @if (ViewBag.Permisos.Contains("GestionarLecciones")){
+                                                                        <a href="/Leccion/Edit/${leccion.leccionID}" class="btn btn-dark btn-sm">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                        <a href="/Leccion/Delete/${leccion.leccionID}" class="btn btn-dark btn-sm">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </a>
+                                                                    }
+                                                                </div>
+                                                            }   
+                                                            </li>
                                                     `;
                                                 });
                                             } else {
@@ -202,22 +241,24 @@
                                     </div>
                                 </div>
 
-                                <!-- Action Buttons -->
-                                <div class="ms-3 d-flex flex-column align-items-center justify-content-center">
-                                    <button 
-                                        class="btn btn-outline-success btn-sm mb-2" 
-                                        title="Agregar Lección"
-                                        onclick="openAddLessonModal(${modulo.id})" // Ahora usa el ID
-                                    >
-                                        <i class="fa fa-plus"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger btn-sm mb-2" title="Eliminar">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                    <button class="btn btn-outline-primary btn-sm mb-2" title="Editar">
-                                        <i class="fa fa-edit"></i>
-                                    </button>
-                                </div>
+                                @if (ViewBag.Permisos.Contains("GestionarModulos")){
+                                    <!-- Action Buttons -->
+                                    <div class="ms-3 d-flex flex-column align-items-center justify-content-center">
+                                        <button 
+                                            class="btn btn-outline-success btn-sm mb-2" 
+                                            title="Agregar Lección"
+                                            onclick="openAddLessonModal(${modulo.id})" // Ahora usa el ID
+                                        >
+                                            <i class="fa fa-plus"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm mb-2" title="Eliminar">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                        <button class="btn btn-outline-primary btn-sm mb-2" title="Editar">
+                                            <i class="fa fa-edit"></i>
+                                        </button>
+                                    </div>
+                                }
                             </div>
                         `;
                     });
@@ -282,19 +323,4 @@
             })
             .catch((error) => console.error("Error al agregar la lección:", error));
     });
-
-    function viewLesson(leccionId) {
-        window.location.href = `/Leccion/Details/${leccionId}`;
-    }
-
-    function editLesson(leccionId) {
-        window.location.href = `/Leccion/Edit/${leccionId}`;
-    }
-
-    function deleteLesson(leccionId) {
-        if (confirm("¿Estás seguro de que deseas eliminar esta lección?")) {
-            window.location.href = `/Leccion/Delete/${leccionId}`;
-        }
-    }
-
 </script>

@@ -9,7 +9,28 @@ namespace E_Platform.Seeders
     {
         public static async Task SeedPermissions(RoleManager<IdentityRole> roleManager, AppDbContext context)
         {
-            var permissions = new List<string> { "CrearCurso", "EditarCurso", "EliminarCurso", "VerCurso", "VerCursos" };
+            var permissions = new List<string> { 
+                //Cursos
+                "CrearCurso", 
+                "EditarCurso", 
+                "EliminarCurso", 
+                "VerCurso", 
+                "VerCursos",  
+                // Módulos
+                "GestionarModulos", // CRUD (Administrador e Instructor)
+                "VerModulos",       // Sólo ver, para Alumnos
+
+                // Lecciones
+                "GestionarLecciones", // CRUD (Administrador e Instructor)
+                "VerLecciones",       // Sólo ver, para Alumnos
+
+                // Cuestionarios
+                "GestionarCuestionarios", // CRUD (Administrador e Instructor)
+                "ResponderCuestionarios", // Permite a los alumnos responder
+
+                // Preguntas
+                "GestionarPreguntas", // CRUD (Administrador e Instructor)
+            };
 
             var existingPermissions = await context.AppPermissions.AsNoTracking().ToListAsync();
 
@@ -60,7 +81,12 @@ namespace E_Platform.Seeders
                     .ToListAsync();
 
                 var studentPermissions = allPermissions
-                    .Where(p => p.Name == "VerCurso" || p.Name == "VerCursos")
+                    .Where(p => p.Name == "VerCurso" || 
+                                p.Name == "VerCursos" || 
+                                p.Name == "VerModulos" || 
+                                p.Name == "VerLecciones" || 
+                                p.Name == "ResponderCuestionarios"
+                    )
                     .ToList();
 
                 foreach (var permission in studentPermissions)

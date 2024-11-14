@@ -1,0 +1,35 @@
+﻿@model E_Platform.Models.Cuestionario
+
+<div class="container mt-4">
+    <h2>Detalles del Cuestionario</h2>
+    <p><strong>Nombre:</strong> @Model.Nombre</p>
+    <p><strong>Fecha de Creación:</strong> @Model.FechaCreacion.ToShortDateString()</p>
+
+    <hr />
+
+    <h3>Preguntas</h3>
+    <ul class="list-group">
+        @if (Model.Preguntas != null && Model.Preguntas.Any())
+        {
+            @foreach (var pregunta in Model.Preguntas)
+            {
+                <li class="list-group-item">
+                    <p>@pregunta.TextoPregunta</p>
+                    <p><strong>Opciones:</strong></p>
+                    <ul>
+                        @foreach (var opcion in pregunta.Opciones)
+                        {
+                            <li>@opcion.TextoOpcion - @(opcion.EsCorrecta.HasValue && opcion.EsCorrecta.Value ? "Correcta" : "Incorrecta")</li>
+                        }
+                    </ul>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="list-group-item">No hay preguntas disponibles.</li>
+        }
+    </ul>
+
+    <a href="/Pregunta/Create?cuestionarioId=@Model.CuestionarioID" class="btn btn-success mt-3">Agregar Pregunta</a>
+</div>

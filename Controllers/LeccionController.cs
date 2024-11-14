@@ -7,16 +7,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using E_Platform.Data;
 using E_Platform.Models;
+using E_Platform.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace E_Platform.Controllers
 {
     public class LeccionController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly PermissionService _permissionService;
 
-        public LeccionController(AppDbContext context)
+        public LeccionController(
+            AppDbContext context,
+            UserManager<ApplicationUser> userManager,
+            PermissionService permissionService
+        )
         {
             _context = context;
+            _userManager = userManager;
+            _permissionService = permissionService;
         }
 
         public async Task<IActionResult> Index()
@@ -52,14 +62,22 @@ namespace E_Platform.Controllers
                 return NotFound();
             }
 
+            var user = await _userManager.GetUserAsync(User);
+            var permisos = await _permissionService.GetPermissionAsync(user);
+
             var leccion = await _context.Lecciones
                 .Include(l => l.Modulo)
+                .Include(l => l.Cuestionarios)
+                    .ThenInclude(c => c.Preguntas)
+                        .ThenInclude(p => p.Opciones)
                 .FirstOrDefaultAsync(m => m.LeccionID == id);
+            
             if (leccion == null)
             {
                 return NotFound();
             }
 
+            ViewBag.Permisos = permisos;
             return View(leccion);
         }
 
