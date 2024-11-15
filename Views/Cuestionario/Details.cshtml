@@ -1,4 +1,17 @@
 ﻿@model E_Platform.Models.Cuestionario
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
 
 <div class="container mt-4">
     <h2>Detalles del Cuestionario</h2>

@@ -54,7 +54,6 @@ namespace E_Platform.Controllers
             return Json(new { success = true, message = "Lección agregada con éxito" });
         }
 
-
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -65,21 +64,33 @@ namespace E_Platform.Controllers
             var user = await _userManager.GetUserAsync(User);
             var permisos = await _permissionService.GetPermissionAsync(user);
 
+            // Obtener la lección con sus cuestionarios
             var leccion = await _context.Lecciones
                 .Include(l => l.Modulo)
                 .Include(l => l.Cuestionarios)
                     .ThenInclude(c => c.Preguntas)
                         .ThenInclude(p => p.Opciones)
                 .FirstOrDefaultAsync(m => m.LeccionID == id);
-            
+
             if (leccion == null)
             {
                 return NotFound();
             }
 
+            var cuestionarioIds = leccion.Cuestionarios.Select(q => q.CuestionarioID).ToList();
+
+            var usuarioId = user.Id;
+            var cuestionariosConCalificacion = await _context.Calificaciones
+                .Where(c => c.UsuarioID == usuarioId && cuestionarioIds.Contains(c.CuestionarioID))
+                .Select(c => c.CuestionarioID)
+                .ToListAsync();
+
             ViewBag.Permisos = permisos;
+            ViewBag.CuestionariosConCalificacion = cuestionariosConCalificacion;
+
             return View(leccion);
         }
+
 
         public IActionResult Create()
         {

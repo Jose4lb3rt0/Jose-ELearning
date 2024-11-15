@@ -33,6 +33,7 @@
         @foreach (var curso in Model)
         {
                 <div class="col-md-4 mb-4">
+                    
                     <a onclick="loadCursoDetails(@curso.Id)" class="text-decoration-none">
                         <div class="card h-100 shadow-sm hover-scale">
                             <img src="https://picsum.photos/300?random=@curso.Id" class="card-img-top" alt="Imagen" style="height: 150px; object-fit: cover;" />
@@ -54,6 +55,8 @@
                                         <strong>Creado el:</strong> @curso.FechaCreacion.ToShortDateString()
                                     </p>
                                 </div>
+
+                            
 
                             @if (User.Identity.IsAuthenticated)
                             {
@@ -138,13 +141,24 @@
             type: "GET",
             success: function (data) {
                 console.log("Datos recibidos del servidor:", data);
-                const { nombre, descripcion, instructor, objetivos, requisitos, modulos } = data;
+                const { nombre, descripcion, instructor, objetivos, requisitos, modulos, progreso } = data;
 
                 let content = `
                     <h5>${nombre}</h5>
-                    <p>${descripcion}</p>
+                    <p>${descripcion}.${progreso}</p> 
                     <p><strong>Instructor:</strong> ${instructor || "No asignado"}</p>
-
+                    <div class="progress mt-4">
+                        <div 
+                            class="progress-bar" 
+                            role="progressbar" 
+                            style="width: ${progreso}%" 
+                            aria-valuenow="${progreso}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100"
+                        >
+                            ${progreso}% Completado
+                        </div>
+                    </div>
                     <h6>Objetivos</h5>
                     <ul class="list-group mt-2">
                 `;

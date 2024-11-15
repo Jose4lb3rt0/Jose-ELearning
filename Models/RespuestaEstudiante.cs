@@ -20,7 +20,7 @@ namespace E_Platform.Models
         [ForeignKey("OpcionPregunta")]
         public int? OpcionID { get; set; }
 
-        public string RespuestaTexto { get; set; }
+        public string? RespuestaTexto { get; set; }
 
         public DateTime FechaRespuesta { get; set; } = DateTime.Now;
 

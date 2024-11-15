@@ -80,11 +80,12 @@
                         <input type="text" name="Preguntas[${preguntaIdx}].Opciones[${opcionIndex}].TextoOpcion" class="form-control" />
                     </div>
                     <div class="form-check">
-                        <input type="checkbox" name="Preguntas[0].Opciones[0].EsCorrecta" value="true" class="form-check-input" />
+                        <input type="checkbox" name="Preguntas[${preguntaIdx}].Opciones[${opcionIndex}].EsCorrecta" value="true" class="form-check-input" />
                         <label class="form-check-label">¿Es correcta?</label>
                     </div>
                 `;
                 opcionesContainer.appendChild(opcionLi);
             }
+
         </script>
 }

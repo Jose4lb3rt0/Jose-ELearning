@@ -1,0 +1,67 @@
+﻿@model E_Platform.Models.Cuestionario
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="container mt-4">
+    <h2>Responder Cuestionario</h2>
+    <p><strong>Nombre:</strong> @Model.Nombre</p>
+    <hr />
+
+    <form asp-action="Responder" method="post">
+        <input type="hidden" name="CuestionarioID" value="@Model.CuestionarioID" />
+
+        @if (Model.Preguntas != null && Model.Preguntas.Any())
+        {
+            <ul class="list-group">
+                @foreach (var pregunta in Model.Preguntas)
+                {
+                    <li class="list-group-item">
+                        <p><strong>@pregunta.TextoPregunta</strong></p>
+
+                        @if (pregunta.Opciones != null && pregunta.Opciones.Any())
+                        {
+                            <ul>
+                                @foreach (var opcion in pregunta.Opciones)
+                                {
+                                    <li>
+                                        <input 
+                                            type="radio" 
+                                            name="Respuestas[@pregunta.PreguntaID]" 
+                                            value="@opcion.OpcionID" 
+                                            id="opcion-@opcion.OpcionID" 
+                                        />
+                                        <label for="opcion-@opcion.OpcionID">@opcion.TextoOpcion</label>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <textarea 
+                                class="form-control" 
+                                name="RespuestasTexto[@pregunta.PreguntaID]" 
+                                placeholder="Escribe tu respuesta"></textarea>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>No hay preguntas disponibles.</p>
+        }
+
+        <button type="submit" class="btn btn-success mt-3">Enviar Respuestas</button>
+    </form>
+</div>

@@ -19,8 +19,6 @@ namespace E_Platform.Models
         [Range(0, 20)] // Ajustado a un rango de 0 a 20
         public decimal Puntuacion { get; set; }
 
-        public string Retroalimentacion { get; set; }
-
         public DateTime FechaCalificacion { get; set; } = DateTime.Now;
 
         public Cuestionario Cuestionario { get; set; }

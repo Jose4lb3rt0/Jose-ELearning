@@ -139,6 +139,16 @@ namespace E_Platform.Data
                 .WithMany()
                 .HasForeignKey(p => p.UsuarioID)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Leccion>()
+                .HasMany(l => l.Progresos)
+                .WithOne(p => p.Leccion)
+                .HasForeignKey(p => p.LeccionID);
+
+            builder.Entity<Progreso>()
+                .HasOne(p => p.Leccion)
+                .WithMany(l => l.Progresos)
+                .HasForeignKey(p => p.LeccionID);
         }
 
     }

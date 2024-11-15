@@ -4,6 +4,7 @@ using E_Platform.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_Platform.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241114210040_UpdateRespuestaTextoNullable")]
+    partial class UpdateRespuestaTextoNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,6 +131,10 @@ namespace E_Platform.Migrations
                     b.Property<decimal>("Puntuacion")
                         .HasColumnType("decimal(5, 2)")
                         .HasColumnName("Puntuacion");
+
+                    b.Property<string>("Retroalimentacion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UsuarioID")
                         .IsRequired()
@@ -738,7 +745,7 @@ namespace E_Platform.Migrations
                         .IsRequired();
 
                     b.HasOne("E_Platform.Models.Leccion", "Leccion")
-                        .WithMany("Progresos")
+                        .WithMany()
                         .HasForeignKey("LeccionID")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -900,8 +907,6 @@ namespace E_Platform.Migrations
             modelBuilder.Entity("E_Platform.Models.Leccion", b =>
                 {
                     b.Navigation("Cuestionarios");
-
-                    b.Navigation("Progresos");
                 });
 
             modelBuilder.Entity("E_Platform.Models.Modulo", b =>

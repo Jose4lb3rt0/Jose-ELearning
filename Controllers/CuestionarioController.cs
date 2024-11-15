@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using E_Platform.Data;
 using E_Platform.Models;
+using System.Security.Claims;
 
 namespace E_Platform.Controllers
 {
@@ -49,6 +50,116 @@ namespace E_Platform.Controllers
             return View(cuestionario);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Responder(int id)
+        {
+            var cuestionario = await _context.Cuestionarios
+                .Include(c => c.Preguntas)
+                .ThenInclude(p => p.Opciones)
+                .FirstOrDefaultAsync(c => c.CuestionarioID == id);
+
+            if (cuestionario == null)
+            {
+                return NotFound(new { message = "Cuestionario no encontrado" });
+            }
+
+            return View(cuestionario);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Responder(IFormCollection form)
+        {
+            try
+            {
+                _logger.LogInformation("Datos enviados en el formulario:");
+                foreach (var key in form.Keys)
+                {
+                    _logger.LogInformation($"{key}: {form[key]}");
+                }
+
+                // Obtener CuestionarioID
+                if (!form.TryGetValue("CuestionarioID", out var cuestionarioIdValue) ||
+                    !int.TryParse(cuestionarioIdValue, out int cuestionarioId))
+                {
+                    _logger.LogError("CuestionarioID no es válido o no está presente en el formulario.");
+                    TempData["ErrorMessage"] = "El ID del cuestionario no es válido.";
+                    return RedirectToAction("Index", "Cuestionario");
+                }
+
+                // Obtener usuario actual
+                var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var leccionId = _context.Cuestionarios
+                    .Where(c => c.CuestionarioID == cuestionarioId)
+                    .Select(c => c.LeccionID)
+                    .FirstOrDefault();
+
+                if (usuarioId == null)
+                {
+                    return Unauthorized();
+                }
+
+
+                // Procesar respuestas y calcular calificación
+                int totalPreguntas = 0;
+                int respuestasCorrectas = 0;
+
+                foreach (var key in form.Keys)
+                {
+                    if (key.StartsWith("Respuestas["))
+                    {
+                        var preguntaIdString = key.Substring(11, key.Length - 12);
+                        if (!int.TryParse(preguntaIdString, out int preguntaId))
+                        {
+                            _logger.LogWarning($"PreguntaID no válida: {preguntaIdString}");
+                            continue;
+                        }
+
+                        var opcionSeleccionada = form[key];
+                        var opcionCorrecta = await _context.OpcionesPreguntas
+                            .Where(o => o.PreguntaID == preguntaId && o.EsCorrecta == true)
+                            .Select(o => o.OpcionID.ToString())
+                            .FirstOrDefaultAsync();
+
+                        if (opcionSeleccionada == opcionCorrecta)
+                        {
+                            respuestasCorrectas++;
+                        }
+                        totalPreguntas++;
+                    }
+                }
+
+                // Calcular la puntuación
+                decimal puntuacion = totalPreguntas > 0
+                    ? Math.Round((decimal)respuestasCorrectas / totalPreguntas * 20, 2)
+                    : 0;
+
+                _logger.LogInformation($"Puntuación calculada: {puntuacion}");
+
+                // Guardar la calificación en la base de datos
+                var calificacion = new Calificacion
+                {
+                    CuestionarioID = cuestionarioId,
+                    UsuarioID = usuarioId,
+                    Puntuacion = puntuacion,
+                    FechaCalificacion = DateTime.Now
+                };
+
+                _context.Calificaciones.Add(calificacion);
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = $"Respuestas enviadas exitosamente. Tu calificación es: {puntuacion}/20.";
+                return RedirectToAction("Details", "Cuestionario", new { id = cuestionarioId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al procesar las respuestas del cuestionario.");
+                TempData["ErrorMessage"] = "Hubo un error al procesar tus respuestas. Por favor, intenta de nuevo.";
+                return RedirectToAction("Responder", new { id = form["CuestionarioID"] });
+            }
+        }
+
         // GET: Cuestionario/Create
         [HttpGet]
         public IActionResult Create(int leccionId)
@@ -73,20 +184,7 @@ namespace E_Platform.Controllers
 
             try
             {
-                // Validar y convertir "on" a true
-                foreach (var pregunta in cuestionario.Preguntas ?? new List<Pregunta>())
-                {
-                    foreach (var opcion in pregunta.Opciones ?? new List<OpcionPregunta>())
-                    {
-                        if (opcion.EsCorrecta == false && HttpContext.Request.Form[$"Preguntas[{pregunta.PreguntaID}].Opciones[{opcion.OpcionID}].EsCorrecta"] == "on")
-                        {
-                            opcion.EsCorrecta = true;
-                        }
-                    }
-                }
-
-                // Validar el modelo
-                if (ModelState.IsValid)
+                if(ModelState.IsValid)
                 {
                     _logger.LogInformation("ModelState es válido. Guardando cuestionario...");
                     _context.Add(cuestionario);

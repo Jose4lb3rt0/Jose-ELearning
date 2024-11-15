@@ -21,12 +21,25 @@
                             <a href="/Cuestionario/Edit/@cuestionario.CuestionarioID" class="btn btn-sm btn-warning me-2">Editar</a>
                             <a href="/Cuestionario/Delete/@cuestionario.CuestionarioID" class="btn btn-sm btn-danger">Eliminar</a>
                         }
-                        @if (ViewBag.Permisos.Contains("ResponderCuestionarios")){
-                            <a href="/Cuestionario/Responder/@cuestionario.CuestionarioID" class="btn btn-sm btn-success me-2">
-                                <i class="fas fa-pencil"></i>
-                                Responder
-                            </a>
+                        @if (ViewBag.Permisos.Contains("ResponderCuestionarios") && User.IsInRole("Alumno"))
+                        {
+                            var isCalificado = ((IEnumerable<int>)ViewBag.CuestionariosConCalificacion).Contains(cuestionario.CuestionarioID);
+                            if (isCalificado)
+                            {
+                                <button class="btn btn-sm btn-secondary me-2" disabled>
+                                    <i class="fas fa-check"></i>
+                                    Ya completado
+                                </button>
+                            }
+                            else
+                            {
+                                <a href="/Cuestionario/Responder/@cuestionario.CuestionarioID" class="btn btn-sm btn-success me-2">
+                                    <i class="fas fa-pencil"></i>
+                                    Responder
+                                </a>
+                            }
                         }
+
                     </div>
                 </li>
             }

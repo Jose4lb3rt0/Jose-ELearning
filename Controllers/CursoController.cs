@@ -10,6 +10,7 @@ using E_Platform.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using E_Platform.Services;
+using System.Security.Claims;
 
 namespace E_Platform.Controllers
 {
@@ -84,9 +85,13 @@ namespace E_Platform.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
+            var usuarioId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (usuarioId == null) return Unauthorized();
+
             var curso = await _context.Cursos
                 .Include(c => c.Modulos)
                     .ThenInclude(m => m.Lecciones)
+                        .ThenInclude(l => l.Progresos)
                 .Include(c => c.Objetivos)
                 .Include(c => c.Requisitos)
                 .Include(c => c.Instructor)
@@ -97,25 +102,36 @@ namespace E_Platform.Controllers
                 return NotFound(new { message = "Curso no encontrado" }); 
             }
 
+            //Quiero traerme el progreso
+            var totalLecciones = curso.Modulos.SelectMany(m => m.Lecciones).Count();
+            var leccionesCompletadas = curso.Modulos
+                .SelectMany(m => m.Lecciones)
+                .Count(l => l.Progresos.Any(p => p.UsuarioID == usuarioId && p.Completado));
+
+            var progresoCurso = totalLecciones > 0 
+                ? Math.Round((decimal)leccionesCompletadas / totalLecciones * 100, 2) 
+                : 0;
+
             return Json(new
             {
                 curso.Nombre,
                 curso.Descripcion,
-                Instructor = curso.Instructor?.Name,
-                Objetivos = curso.Objetivos.Select(o => o.Descripcion),
-                Requisitos = curso.Requisitos.Select(r => r.Descripcion),
-                Modulos = curso.Modulos.Select(m => new
+                Progreso = progresoCurso,
+                Instructor = curso.Instructor?.Name ?? "Instructor no asignado",
+                Objetivos = curso.Objetivos?.Select(o => o.Descripcion) ?? Enumerable.Empty<string>(),
+                Requisitos = curso.Requisitos?.Select(r => r.Descripcion) ?? Enumerable.Empty<string>(),
+                Modulos = curso.Modulos?.Select(m => new
                 {
                     m.Id,
                     m.Titulo,
                     m.Descripcion,
-                    Lecciones = m.Lecciones.Select(l => new
+                    Lecciones = m.Lecciones?.Select(l => new
                     {
                         l.LeccionID,
                         l.Nombre,
                         l.Contenido
-                    })
-                })
+                    }) ?? Enumerable.Empty<object>()
+                }) ?? Enumerable.Empty<object>()
             });
         }
 

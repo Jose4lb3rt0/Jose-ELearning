@@ -22,6 +22,7 @@ namespace E_Platform.Models
 
         public virtual Modulo? Modulo { get; set; }
         public virtual ICollection<Cuestionario>? Cuestionarios { get; set; } = new List<Cuestionario>();
+        public virtual ICollection<Progreso>? Progresos { get; set; } = new List<Progreso>();
     }
 
 }
