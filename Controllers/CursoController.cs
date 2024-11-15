@@ -102,15 +102,34 @@ namespace E_Platform.Controllers
                 return NotFound(new { message = "Curso no encontrado" }); 
             }
 
-            //Quiero traerme el progreso
-            var totalLecciones = curso.Modulos.SelectMany(m => m.Lecciones).Count();
+            //----------------Progreso del curso
+            var modulos = curso.Modulos.ToList();
+            var modulosCompletados = modulos
+                .Count(m => _context.Lecciones
+                    .Where(l => l.ModuloID == m.Id)
+                    .All(l => _context.Cuestionarios
+                        .Where(c => c.LeccionID == l.LeccionID)
+                        .All(c => _context.Progresos.Any(p => p.CuestionarioID == c.CuestionarioID && p.Completado))));
+
+            var progresoCurso = modulos.Count > 0
+                ? Math.Round((decimal)modulosCompletados / modulos.Count * 100, 2)
+                : 0;
+
+            ViewBag.ProgresoCurso = progresoCurso;
+            //----------------      
+
+            //----------------Progreso de lecciones
+            var totalLecciones = modulos.SelectMany(m => m.Lecciones).Count();
             var leccionesCompletadas = curso.Modulos
                 .SelectMany(m => m.Lecciones)
                 .Count(l => l.Progresos.Any(p => p.UsuarioID == usuarioId && p.Completado));
 
-            var progresoCurso = totalLecciones > 0 
-                ? Math.Round((decimal)leccionesCompletadas / totalLecciones * 100, 2) 
+            var progresoLecciones = totalLecciones > 0
+                ? Math.Round((decimal)leccionesCompletadas / totalLecciones * 100, 2)
                 : 0;
+            //----------------
+
+           
 
             return Json(new
             {

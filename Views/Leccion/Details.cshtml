@@ -10,8 +10,8 @@
         <div 
             class="progress-bar" 
             role="progressbar" 
-            style="width: @ViewBag.ProgresoLeccion%" 
-            aria-valuenow="@ViewBag.ProgresoLeccion" 
+            style="width: @(ViewBag.ProgresoLeccion)%" 
+            aria-valuenow="@(ViewBag.ProgresoLeccion)" 
             aria-valuemin="0" 
             aria-valuemax="100">
             @ViewBag.ProgresoLeccion% Completado
@@ -23,6 +23,7 @@
         {
             @foreach (var cuestionario in Model.Cuestionarios)
             {
+
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <span>@cuestionario.Nombre</span>
                     <div>

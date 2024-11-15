@@ -89,11 +89,20 @@ namespace E_Platform.Controllers
 
             //-----------
             var cuestionarios = leccion.Cuestionarios.ToList();
-            var cuestionariosCompletados = _context.Progresos
+
+            /*var cuestionariosCompletados = _context.Progresos
                 .Count(p => p.UsuarioID == usuarioId && 
-                       p.CuestionarioID != null && p.Completado);
+                       p.CuestionarioID != null && p.Completado);*/
+
+            var cuestionariosCompletados = _context.Progresos
+                .Count(p => p.LeccionID == id && p.UsuarioID == usuarioId && p.Completado);
+
+            var totalCuestionarios = _context.Cuestionarios
+                .Count(c => c.LeccionID == id);
+
             var progresoLeccion = cuestionarios.Count > 0
-                ? Math.Round((decimal)cuestionariosCompletados/cuestionarios.Count * 100, 2) 
+                // ? Math.Round((decimal)cuestionariosCompletados/cuestionarios.Count * 100, 2) 
+                ? Math.Round((decimal)cuestionariosCompletados/totalCuestionarios * 100, 2) 
                 : 0;
 
             ViewBag.ProgresoLeccion = progresoLeccion;
