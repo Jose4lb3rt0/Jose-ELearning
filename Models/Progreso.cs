@@ -20,6 +20,9 @@ namespace E_Platform.Models
         [ForeignKey("Leccion")]
         public int LeccionID { get; set; }
 
+        [ForeignKey("Cuestionario")]
+        public int? CuestionarioID { get; set; }
+
         public bool Completado { get; set; } = false;
 
         public DateTime? FechaCompletado { get; set; }
@@ -28,6 +31,7 @@ namespace E_Platform.Models
         public Curso Curso { get; set; }
         public Modulo Modulo { get; set; }
         public Leccion Leccion { get; set; }
+        public Cuestionario? Cuestionario { get; set; }
     }
 
 }

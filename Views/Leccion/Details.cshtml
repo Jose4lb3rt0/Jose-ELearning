@@ -6,7 +6,17 @@
     <p><strong>Contenido:</strong> @Model.Contenido</p>
     <p><strong>Módulo:</strong> @Model.Modulo?.Titulo</p>
     <hr />
-
+    <div class="progress mt-4 mb-4">
+        <div 
+            class="progress-bar" 
+            role="progressbar" 
+            style="width: @ViewBag.ProgresoLeccion%" 
+            aria-valuenow="@ViewBag.ProgresoLeccion" 
+            aria-valuemin="0" 
+            aria-valuemax="100">
+            @ViewBag.ProgresoLeccion% Completado
+        </div>
+    </div>
     <h3>Cuestionarios</h3>
     <ul class="list-group mb-4">
         @if (Model.Cuestionarios != null && Model.Cuestionarios.Any())

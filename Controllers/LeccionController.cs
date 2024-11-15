@@ -9,6 +9,7 @@ using E_Platform.Data;
 using E_Platform.Models;
 using E_Platform.Services;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace E_Platform.Controllers
 {
@@ -64,6 +65,11 @@ namespace E_Platform.Controllers
             var user = await _userManager.GetUserAsync(User);
             var permisos = await _permissionService.GetPermissionAsync(user);
 
+            //----------------  
+            var usuarioIdd = User.FindFirstValue(ClaimTypes.NameIdentifier); 
+            if (usuarioIdd == null) return Unauthorized();
+            //----------------  
+
             // Obtener la lección con sus cuestionarios
             var leccion = await _context.Lecciones
                 .Include(l => l.Modulo)
@@ -72,18 +78,26 @@ namespace E_Platform.Controllers
                         .ThenInclude(p => p.Opciones)
                 .FirstOrDefaultAsync(m => m.LeccionID == id);
 
-            if (leccion == null)
-            {
-                return NotFound();
-            }
-
-            var cuestionarioIds = leccion.Cuestionarios.Select(q => q.CuestionarioID).ToList();
+            if (leccion == null){ return NotFound(); }
 
             var usuarioId = user.Id;
+            var cuestionarioIds = leccion.Cuestionarios.Select(q => q.CuestionarioID).ToList();
             var cuestionariosConCalificacion = await _context.Calificaciones
                 .Where(c => c.UsuarioID == usuarioId && cuestionarioIds.Contains(c.CuestionarioID))
                 .Select(c => c.CuestionarioID)
                 .ToListAsync();
+
+            //-----------
+            var cuestionarios = leccion.Cuestionarios.ToList();
+            var cuestionariosCompletados = _context.Progresos
+                .Count(p => p.UsuarioID == usuarioId && 
+                       p.CuestionarioID != null && p.Completado);
+            var progresoLeccion = cuestionarios.Count > 0
+                ? Math.Round((decimal)cuestionariosCompletados/cuestionarios.Count * 100, 2) 
+                : 0;
+
+            ViewBag.ProgresoLeccion = progresoLeccion;
+            //-----------
 
             ViewBag.Permisos = permisos;
             ViewBag.CuestionariosConCalificacion = cuestionariosConCalificacion;

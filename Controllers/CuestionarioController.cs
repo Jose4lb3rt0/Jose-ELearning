@@ -100,7 +100,6 @@ namespace E_Platform.Controllers
                     return Unauthorized();
                 }
 
-
                 // Procesar respuestas y calcular calificación
                 int totalPreguntas = 0;
                 int respuestasCorrectas = 0;
@@ -147,6 +146,27 @@ namespace E_Platform.Controllers
                 };
 
                 _context.Calificaciones.Add(calificacion);
+
+                //---MODIFICACIÓN DEL PROGRESO---
+                    var progresoCuestionario = await _context.Progresos.FirstOrDefaultAsync(p => p.UsuarioID == usuarioId && p.CuestionarioID == cuestionarioId);
+                    
+                    if(progresoCuestionario == null)
+                    {  
+                        var progreso = new Progreso
+                        {
+                            UsuarioID = usuarioId,
+                            CursoID = _context.Lecciones.Where(l => l.LeccionID == leccionId).Select(l => l.Modulo.CursoId).FirstOrDefault(),
+                            ModuloID = _context.Lecciones.Where(l => l.LeccionID == leccionId).Select(l => l.ModuloID).FirstOrDefault(),
+                            LeccionID = leccionId,
+                            CuestionarioID = cuestionarioId,
+                            Completado = true,
+                            FechaCompletado = DateTime.Now
+                        };
+
+                        _context.Progresos.Add(progreso);
+                    }
+                //-------------------------------
+                
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = $"Respuestas enviadas exitosamente. Tu calificación es: {puntuacion}/20.";
