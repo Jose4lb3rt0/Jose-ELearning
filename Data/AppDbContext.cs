@@ -26,6 +26,8 @@ namespace E_Platform.Data
         public DbSet<RespuestaEstudiante> RespuestasDeEstudiantes { get; set; }
         public DbSet<Calificacion> Calificaciones { get; set; }
         public DbSet<Progreso> Progresos { get; set; }
+        public DbSet<Post> Posts { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

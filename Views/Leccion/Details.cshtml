@@ -23,9 +23,14 @@
         {
             @foreach (var cuestionario in Model.Cuestionarios)
             {
+                var calificaciones = (IDictionary<int, decimal>)ViewBag.CuestionariosConCalificacion;
+                var tieneCalificacion = calificaciones.ContainsKey(cuestionario.CuestionarioID);
+                var calificacion = tieneCalificacion ? calificaciones[cuestionario.CuestionarioID] : (decimal?)null;
 
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>@cuestionario.Nombre</span>
+                    <span>
+                        <strong>@cuestionario.Nombre</strong>
+                    </span>
                     <div>
                         @if (ViewBag.Permisos.Contains("GestionarCuestionarios")){
                             <a href="/Cuestionario/Details/@cuestionario.CuestionarioID" class="btn btn-sm btn-primary me-2">Ver</a>
@@ -34,9 +39,10 @@
                         }
                         @if (ViewBag.Permisos.Contains("ResponderCuestionarios") && User.IsInRole("Alumno"))
                         {
-                            var isCalificado = ((IEnumerable<int>)ViewBag.CuestionariosConCalificacion).Contains(cuestionario.CuestionarioID);
-                            if (isCalificado)
+                            @* var isCalificado = ((IEnumerable<int>)ViewBag.CuestionariosConCalificacion).Contains(cuestionario.CuestionarioID); *@
+                            if (tieneCalificacion)
                             {
+                                <span class="badge bg-primary ms-2">Calificación: @calificacion/20</span>    
                                 <button class="btn btn-sm btn-secondary me-2" disabled>
                                     <i class="fas fa-check"></i>
                                     Ya completado

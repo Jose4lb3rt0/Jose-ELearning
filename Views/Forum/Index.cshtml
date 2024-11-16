@@ -1,0 +1,21 @@
+﻿<h1 class="text-center my-4">Foro del Curso</h1>
+
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="Create" asp-route-cursoId="@ViewBag.CursoID" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Crear Nuevo Post
+    </a>
+</div>
+
+<div class="list-group">
+    @foreach (var post in Model)
+    {
+        <a asp-action="ViewPost" asp-route-cursoId="@ViewBag.CursoID" asp-route-postId="@post.PostID"
+           class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">@post.Titulo</h5>
+                <small class="text-muted">@post.FechaCreacion.ToString("dd MMM yyyy")</small>
+            </div>
+            <p class="mb-1 text-truncate">@post.Contenido</p>
+        </a>
+    }
+</div>

@@ -63,14 +63,12 @@ namespace E_Platform.Controllers
             }
 
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized();
+
             var permisos = await _permissionService.GetPermissionAsync(user);
+            var usuarioId = user.Id;
 
-            //----------------  
-            var usuarioIdd = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-            if (usuarioIdd == null) return Unauthorized();
-            //----------------  
-
-            // Obtener la lección con sus cuestionarios
+            //Obtener la lección con sus módulos y cuestionarios
             var leccion = await _context.Lecciones
                 .Include(l => l.Modulo)
                 .Include(l => l.Cuestionarios)
@@ -78,36 +76,22 @@ namespace E_Platform.Controllers
                         .ThenInclude(p => p.Opciones)
                 .FirstOrDefaultAsync(m => m.LeccionID == id);
 
-            if (leccion == null){ return NotFound(); }
+            if (leccion == null) return NotFound();
 
-            var usuarioId = user.Id;
             var cuestionarioIds = leccion.Cuestionarios.Select(q => q.CuestionarioID).ToList();
+
             var cuestionariosConCalificacion = await _context.Calificaciones
                 .Where(c => c.UsuarioID == usuarioId && cuestionarioIds.Contains(c.CuestionarioID))
-                .Select(c => c.CuestionarioID)
-                .ToListAsync();
+                .ToDictionaryAsync(c => c.CuestionarioID, c => c.Puntuacion);
 
-            //-----------
-            var cuestionarios = leccion.Cuestionarios.ToList();
-
-            /*var cuestionariosCompletados = _context.Progresos
-                .Count(p => p.UsuarioID == usuarioId && 
-                       p.CuestionarioID != null && p.Completado);*/
-
-            var cuestionariosCompletados = _context.Progresos
-                .Count(p => p.LeccionID == id && p.UsuarioID == usuarioId && p.Completado);
-
-            var totalCuestionarios = _context.Cuestionarios
-                .Count(c => c.LeccionID == id);
-
-            var progresoLeccion = cuestionarios.Count > 0
-                // ? Math.Round((decimal)cuestionariosCompletados/cuestionarios.Count * 100, 2) 
-                ? Math.Round((decimal)cuestionariosCompletados/totalCuestionarios * 100, 2) 
+            //Calcular el progreso de la lección
+            var totalCuestionarios = leccion.Cuestionarios.Count;
+            var cuestionariosCompletados = cuestionariosConCalificacion.Count;
+            var progresoLeccion = totalCuestionarios > 0
+                ? Math.Round((decimal)cuestionariosCompletados / totalCuestionarios * 100, 2)
                 : 0;
 
             ViewBag.ProgresoLeccion = progresoLeccion;
-            //-----------
-
             ViewBag.Permisos = permisos;
             ViewBag.CuestionariosConCalificacion = cuestionariosConCalificacion;
 

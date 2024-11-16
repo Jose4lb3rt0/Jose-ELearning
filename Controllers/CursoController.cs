@@ -129,10 +129,9 @@ namespace E_Platform.Controllers
                 : 0;
             //----------------
 
-           
-
             return Json(new
             {
+                curso.Id,
                 curso.Nombre,
                 curso.Descripcion,
                 Progreso = progresoCurso,

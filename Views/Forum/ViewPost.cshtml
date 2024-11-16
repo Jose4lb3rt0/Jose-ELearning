@@ -1,0 +1,35 @@
+﻿<div class="container mt-4">
+    <h1 class="text-center mb-4">@Model.Titulo</h1>
+    <p class="mb-4">@Model.Contenido</p>
+    <hr />
+
+    <h3>Comentarios</h3>
+    @if (Model.Comentarios != null )
+    {
+        <div class="list-group mb-4">
+            @foreach (var comentario in Model.Comentarios)
+            {
+                <div class="list-group-item">
+                    <p>@comentario.Contenido</p>
+                    <small class="text-muted">@comentario.FechaCreacion.ToString("dd MMM yyyy hh:mm tt")</small>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+    }
+
+    <hr />
+    <h4>Agregar un comentario</h4>
+    <form asp-action="AddComment" asp-route-cursoId="@ViewBag.CursoID" asp-route-postId="@Model.PostID" method="post">
+        <div class="form-group mb-3">
+            <textarea name="contenido" class="form-control" rows="3"
+                      placeholder="Escribe tu comentario aquí..." required></textarea>
+        </div>
+        <button type="submit" class="btn btn-success">
+            <i class="fas fa-comment"></i> Comentar
+        </button>
+    </form>
+</div>

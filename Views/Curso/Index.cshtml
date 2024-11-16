@@ -141,9 +141,10 @@
             type: "GET",
             success: function (data) {
                 console.log("Datos recibidos del servidor:", data);
-                const { nombre, descripcion, instructor, objetivos, requisitos, modulos, progreso } = data;
+                const { id, nombre, descripcion, instructor, objetivos, requisitos, modulos, progreso } = data;
 
                 let content = `
+                    <a href="/Forum/${id}" class="btn btn-secondary mt-3">Ir al Foro</a>
                     <h5>${nombre}</h5>
                     <p>${descripcion}.${progreso}</p> 
                     <p><strong>Instructor:</strong> ${instructor || "No asignado"}</p>
@@ -311,7 +312,7 @@
         }
 
         const formData = {
-            moduloId: parseInt(document.getElementById("moduloId").value), // Asegúrate de que sea un número válido
+            moduloId: parseInt(document.getElementById("moduloId").value), 
             nombre: document.getElementById("lessonName").value.trim(),
             contenido: document.getElementById("lessonContent").value.trim(),
         };
